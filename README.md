@@ -1,9 +1,18 @@
 leafheap
 ========
 
-Logstash compatible feeder (multi-redis to Elasticsearch). Tailored for our usage at fotopedia.
+Logstash compatible feeder (redis to Elasticsearch). Tailored for our usage at fotopedia.
 
 It reads one or several redis List and inject them in an ElasticSearch.
+
+Building
+========
+
+Assuming you have a working Java 1.7 setup:
+
+```
+./sbt assembly
+```
 
 Usage
 =====
@@ -32,7 +41,7 @@ Credits
 From Fotonauts:
 
 - Pierre Baillet @octplane.
-- Kali
+- kali
 
 
 Copyright (c) 2013 Fotonauts released under the MIT license
