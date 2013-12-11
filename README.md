@@ -20,7 +20,10 @@ java -jar target/scala-2.10/LeafHeap-assembly-0.1-SNAPSHOT.jar --help
 ```
 
 ```
-java -jar LeafHeap-assembly-0.1-SNAPSHOT.jar -e http://es.server.internal:9201/ -l master,staging,testing -r redis.server.internal
+java -jar LeafHeap-assembly-0.1-SNAPSHOT.jar \
+ -e http://es.server.internal:9201/ \
+ -l master,staging,testing \
+ -r redis.server.internal
 ```
 
 Credits
