@@ -98,7 +98,7 @@ object LeafHeap {
 
                 timestamp_ms(logLineObject, "date", "@timestamp")
                 rename(logLineObject, "instance", "host")
-                logLineObject.asInstanceOf(ObjectNode).set("type", new TextNode(queueName))
+                logLineObject.asInstanceOf[ObjectNode].set("type", new TextNode(queueName))
 
                 count = count + 1
                 var indexName = String.format("logstash-%1$tY.%1$tm.%1$td.%1$tH", new GregorianCalendar)
