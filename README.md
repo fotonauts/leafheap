@@ -3,7 +3,18 @@ leafheap
 
 Logstash compatible feeder (redis to Elasticsearch). Tailored for our usage at fotopedia.
 
-It reads one or several redis List and inject them in an ElasticSearch.
+It was born after we found out about Kibana and wanted a more ligthweight approach than using Logstash. It's a followup of [logstash_light](https://github.com/fotonauts/logstash_light) and [logstash_benchmark](https://github.com/octplane/logstash_benchmark).
+
+This specific implementation reads one or several redis lists and injects them in an ElasticSearch. It runs forever.
+
+Build
+=====
+
+The build system uses sbt.
+
+```
+./sbt assembly
+```
 
 Building
 ========
