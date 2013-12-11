@@ -1,11 +1,11 @@
-leafheap
+LeafHeap
 ========
 
 Logstash compatible feeder (redis to Elasticsearch). Tailored for our usage at fotopedia.
 
-It was born after we found out about Kibana and wanted a more ligthweight approach than using Logstash. It's a followup of [logstash_light](https://github.com/fotonauts/logstash_light) and [logstash_benchmark](https://github.com/octplane/logstash_benchmark).
+It was born after we found out about Kibana and wanted a more ligthweight approach than using Logstash. It's a followup of [logstash_light](https://github.com/fotonauts/logstash_light) and [logstash_benchmark](https://github.com/octplane/logstash_benchmark) (in this benchmark the current implementation reads 12000 events/second on octplane@github.devbox).
 
-This specific implementation reads one or several redis lists and injects them in an ElasticSearch. It runs forever.
+This specific implementation reads one or several redis lists and injects them in an ElasticSearch. LeafHeap runs forever and barely complains.
 
 Build
 =====
