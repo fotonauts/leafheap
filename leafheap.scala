@@ -124,6 +124,7 @@ object LeafHeap {
                 case e:Throwable => {
                     System.out.println("Something wrong happened:")
                     System.out.println(e.toString)
+                    e.printStackTrace(System.out)
                     Thread.sleep(1000)
                 }
             }
