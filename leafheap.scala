@@ -123,8 +123,10 @@ object LeafHeap {
             } catch {
                 case e:Throwable => {
                     System.out.println("Something wrong happened:")
+                    System.out.println(log_line)
                     System.out.println(e.toString)
                     e.printStackTrace(System.out)
+                    log_line = jedis.lpop(queueName)
                     Thread.sleep(1000)
                 }
             }
