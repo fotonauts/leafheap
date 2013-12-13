@@ -105,19 +105,22 @@ object LeafHeap {
                     var indexName = String.format("logstash-%1$tY.%1$tm.%1$td.%1$tH", new GregorianCalendar)
                     batch += Map[String, Object]("index" -> Map[String, String]("_index" -> indexName, "_type" -> "logs"))
                     batch += logLineObject
-
-                    // Bulk send to ES
-                    if (count == 100) {
-                        System.out.println(prefix + "Sending 100 objects")
-                        val res = Await.result(Settings.es.bulk(data = (batch.map { v => mapper.writeValueAsString(v) }.mkString("\n"))+"\n"), Duration(8, "second")).getResponseBody
-                        count = 0
-                        batch = scala.collection.mutable.ArrayBuffer[Object]()
-                    }
                 }
-                // Move to next log line
+                // Next tick
                 log_line = jedis.lpop(queueName)
+
+                // If redis is empty, or we have reached our maximum capacity
+                // ship the logs
+                if (log_line == null || count == 1000) {
+                    System.out.println(prefix + "Sending "+ count +" objects.")
+                    val res = Await.result(Settings.es.bulk(data = (batch.map { v => mapper.writeValueAsString(v) }.mkString("\n"))+"\n"), Duration(8, "second")).getResponseBody
+                    count = 0
+                    batch = scala.collection.mutable.ArrayBuffer[Object]()
+                }
+
+                // Move to next non-empty log line if needed
                 while(log_line == null) {
-                    Thread.sleep(1000)
+                    Thread.sleep(500)
                     log_line = jedis.lpop(queueName)
                 }
             } catch {
