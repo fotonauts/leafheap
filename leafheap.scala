@@ -129,7 +129,7 @@ object LeafHeap {
                     System.out.println(log_line)
                     System.out.println(e.toString)
                     e.printStackTrace(System.out)
-                    log_line = jedis.lpop(queueName)
+                    log_line = null
                     Thread.sleep(1000)
                 }
             }
