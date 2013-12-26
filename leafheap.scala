@@ -112,15 +112,14 @@ object LeafHeap {
 
                 // If redis is empty, or we have reached our maximum capacity
                 // ship the logs
-                if (log_line == null || count == 1000) {
-                    System.out.println(prefix + "Sending "+ count +" objects.")
+                if (log_line == null || count == 500) {
                     try {
                         val res = Await.result(Settings.es.bulk(data = (batch.map { v => mapper.writeValueAsString(v) }.mkString("\n"))+"\n"), Duration(8, "second")).getResponseBody
-                        val responseObject = mapper.readTree(res)
-                        System.out.println("took " + responseObject.get("took"))
+                        val responseObject = mapper.readTree(result)
+                        System.out.println(prefix + "Sending "+ count +" objects took " + responseObject.get("took") + "ms.")
                     } catch {
                         case e: TimeoutException => {
-                            System.out.println("Timeout during. Throwing data out.")
+                            System.out.println(prefix + "Sending "+ count + " objects: Timeout. Throwing data out.")
                         }
                     }
                     count = 0
