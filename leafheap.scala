@@ -114,6 +114,8 @@ object LeafHeap {
                 if (log_line == null || count == 1000) {
                     System.out.println(prefix + "Sending "+ count +" objects.")
                     val res = Await.result(Settings.es.bulk(data = (batch.map { v => mapper.writeValueAsString(v) }.mkString("\n"))+"\n"), Duration(8, "second")).getResponseBody
+                    val responseObject = mapper.readTree(log_line)
+                    System.out.println("took " + responseObject.get("took"))
                     count = 0
                     batch = scala.collection.mutable.ArrayBuffer[Object]()
                 }
