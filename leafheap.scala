@@ -116,7 +116,6 @@ object LeafHeap {
                     try {
                         val res = Await.result(Settings.es.bulk(data = (batch.map { v => mapper.writeValueAsString(v) }.mkString("\n"))+"\n"), Duration(8, "second")).getResponseBody
                         val responseObject = mapper.readTree(res)
-                        System.out.println(prefix + "Sending "+ count +" objects took " + responseObject.get("took") + "ms.")
                     } catch {
                         case e: TimeoutException => {
                             System.out.println(prefix + "Sending "+ count + " objects: Timeout. Throwing data out.")
