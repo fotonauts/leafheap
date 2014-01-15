@@ -118,7 +118,7 @@ object LeafHeap {
                         val responseObject = mapper.readTree(res)
                     } catch {
                         case e: TimeoutException => {
-                            System.out.println(prefix + "Sending "+ count + " objects: Timeout. Throwing data out.")
+                            System.out.println(prefix + "Sending "+ count + " objects: Timeout. Throwing data out: " + e)
                         }
                     }
                     count = 0
