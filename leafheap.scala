@@ -179,6 +179,7 @@ object LeafHeap {
         Settings.redisQueues.split(",").
         foreach{ queue =>
             val t = new Thread(new QueueProcessor(queue))
+            t.setName(queue)
             t.setDaemon(false)
             t.start()
         }
