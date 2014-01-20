@@ -15,7 +15,7 @@ object MyBuild extends Build
                     resolvers ++= Seq( "gphat" at "https://raw.github.com/gphat/mvn-repo/master/releases/"),
 
                     libraryDependencies ++= Seq(
-                        "redis.clients"                   % "jedis"                      % "1.5.2",
+                        "redis.clients"                   % "jedis"                      % "2.2.1",
                         "joda-time"                       % "joda-time"                  % "2.3",
                         "org.joda"                        % "joda-convert"               % "1.2",
                         "com.fasterxml.jackson.core"      % "jackson-core"               % "2.3.0",

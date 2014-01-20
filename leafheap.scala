@@ -1,6 +1,7 @@
 package com.fotopedia.LeafHeap
 
 import redis.clients.jedis.Jedis
+import redis.clients.jedis.exceptions.JedisDataException
 
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -51,6 +52,8 @@ object Settings {
     @Args4jOption(name = "--logback", usage = "overrides -d")
     var logbackConfigFile:String = null
 
+    var scriptSha:String = null
+
 }
 
 class QueueProcessor(queueName: String) extends Runnable {
@@ -88,14 +91,24 @@ object LeafHeap {
 
         System.out.println(prefix + "Queue has size:" + l )
         var count = 0
-        var log_line =  jedis.lpop(queueName)
-
         var batch = scala.collection.mutable.ArrayBuffer[Object]()
+        var readCount = 500
 
         while(true) {
             try {
-                if (log_line != null) {
-                    // Process the data
+                val indexName = String.format("logstash-%1$tY.%1$tm.%1$td.%1$tH", new GregorianCalendar)
+                val items:List[String] = try {
+                    jedis.evalsha(Settings.scriptSha, List(queueName), List(readCount.toString)).asInstanceOf[java.util.List[String]].toList
+                } catch {
+                    case e:Throwable => {
+                        System.out.println("Reloading function")
+                        loadScript(jedis)
+                        List()
+                    }
+                }
+
+
+                items.foreach{ log_line =>
                     val logLineObject = mapper.readTree(log_line)
 
                     timestamp_ms(logLineObject, "date", "@timestamp")
@@ -103,16 +116,13 @@ object LeafHeap {
                     logLineObject.asInstanceOf[ObjectNode].set("type", new TextNode(queueName))
 
                     count = count + 1
-                    var indexName = String.format("logstash-%1$tY.%1$tm.%1$td.%1$tH", new GregorianCalendar)
                     batch += Map[String, Object]("index" -> Map[String, String]("_index" -> indexName, "_type" -> "logs"))
                     batch += logLineObject
                 }
-                // Next tick
-                log_line = jedis.lpop(queueName)
 
                 // If redis is empty, or we have reached our maximum capacity
                 // ship the logs
-                if (log_line == null || count == 500) {
+                if (count >= 500) {
                     try {
                         val res = Await.result(Settings.es.bulk(data = (batch.map { v => mapper.writeValueAsString(v) }.mkString("\n"))+"\n"), Duration(8, "second")).getResponseBody
                         val responseObject = mapper.readTree(res)
@@ -123,20 +133,14 @@ object LeafHeap {
                     }
                     count = 0
                     batch = scala.collection.mutable.ArrayBuffer[Object]()
-                }
-
-                // Move to next non-empty log line if needed
-                while(log_line == null) {
-                    Thread.sleep(500)
-                    log_line = jedis.lpop(queueName)
+                } else {
+                    Thread.sleep(100)
                 }
             } catch {
                 case e:Throwable => {
                     System.out.println("Something wrong happened:")
-                    System.out.println(log_line)
                     System.out.println(e.toString)
                     e.printStackTrace(System.out)
-                    log_line = null
                     Thread.sleep(1000)
                 }
             }
@@ -147,6 +151,24 @@ object LeafHeap {
         val o = new ObjectMapper()
         o.registerModule(DefaultScalaModule)
         o
+    }
+
+    def loadScript(jedis:Jedis) {
+        Settings.scriptSha = jedis.scriptLoad("""
+            local i = tonumber(ARGV[1])
+            local res = {}
+            local length = redis.call('llen',KEYS[1])
+            if length < i then i = length end
+            while (i > 0) do
+              local item = redis.call("lpop", KEYS[1])
+              if (not item) then
+                break
+              end
+              table.insert(res, item)
+              i = i-1
+            end
+            return res
+            """)
     }
 
     def main(args:Array[String]) {
@@ -175,6 +197,9 @@ object LeafHeap {
                 if(Settings.debugMode) "logback.debug.xml" else "logback.xml"
                 )
         }
+
+        val jedis = new Jedis(Settings.redisHostname, Settings.redisPort)
+        loadScript(jedis)
 
         Settings.redisQueues.split(",").
         foreach{ queue =>
