@@ -122,7 +122,7 @@ object LeafHeap {
 
                 // If redis is empty, or we have reached our maximum capacity
                 // ship the logs
-                if (count >= 500) {
+                if (count > 0) {
                     try {
                         val res = Await.result(Settings.es.bulk(data = (batch.map { v => mapper.writeValueAsString(v) }.mkString("\n"))+"\n"), Duration(8, "second")).getResponseBody
                         val responseObject = mapper.readTree(res)
