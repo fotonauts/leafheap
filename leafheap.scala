@@ -101,7 +101,9 @@ object LeafHeap {
                     jedis.evalsha(Settings.scriptSha, List(queueName), List(readCount.toString)).asInstanceOf[java.util.List[String]].toList
                 } catch {
                     case e:Throwable => {
-                        System.out.println("Reloading function")
+                        System.out.println("Reloading function (got and exception:)")
+                        System.out.println(e.toString)
+                        e.printStackTrace(System.out)
                         loadScript(jedis)
                         List()
                     }
